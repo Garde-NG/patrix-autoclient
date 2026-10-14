@@ -64,7 +64,7 @@ export function ConnectRepositorySheet({ orgId, open, onClose, onConnected }: { 
       ) : !active.length ? (
         <LinkInstallation orgId={orgId} />
       ) : (
-        <form id="connect-form" onSubmit={submit} className="flex flex-col gap-4 pb-2">
+        <form id="connect-form" onSubmit={submit} className="flex flex-col gap-5 pb-2">
           {connect.error && !Object.keys(fields).length ? (
             <p role="alert" className="t-footnote rounded-[10px] bg-danger-soft px-3.5 py-2.5 text-danger">
               {connect.error.message}

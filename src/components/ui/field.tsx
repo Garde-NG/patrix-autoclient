@@ -9,8 +9,10 @@ import { cn } from "@/lib/utils";
    the same everywhere. Validation shows inline next to the field, never in an alert.
    --------------------------------------------------------------------------------------------- */
 
+/* Focus keeps the same shape and colour as rest: the border darkens a step and a soft neutral halo
+   appears, so the field reads as active without changing its outline or radius. */
 export const controlClass =
-  "w-full rounded-[11px] border border-separator bg-surface px-3.5 text-[15px] text-text placeholder:text-text-3 transition-[border-color,box-shadow] duration-150 focus:border-accent focus:outline-none focus:shadow-[0_0_0_3px_var(--accent-soft)] disabled:opacity-50 aria-[invalid=true]:border-danger aria-[invalid=true]:focus:shadow-[0_0_0_3px_var(--danger-soft)]";
+  "w-full rounded-[11px] border border-separator bg-surface px-3.5 text-[15px] text-text placeholder:text-text-3 transition-[border-color,box-shadow,background-color] duration-150 hover:border-separator-strong focus:border-separator-strong focus:outline-none focus:shadow-[0_0_0_4px_var(--fill)] disabled:opacity-50 aria-[invalid=true]:border-danger aria-[invalid=true]:focus:shadow-[0_0_0_4px_var(--danger-soft)]";
 
 interface FieldShellProps {
   label?: ReactNode;
@@ -27,9 +29,9 @@ export function FieldShell({ label, hint, error, required, className, children }
   const errorId = error ? `${id}-error` : undefined;
   const describedBy = [errorId, hintId].filter(Boolean).join(" ") || undefined;
   return (
-    <div className={cn("flex min-w-0 flex-col gap-1.5", className)}>
+    <div className={cn("flex min-w-0 flex-col gap-2", className)}>
       {label ? (
-        <label htmlFor={id} className="t-footnote font-medium text-text-2">
+        <label htmlFor={id} className="t-footnote mt-1 font-medium text-text-2">
           {label}
           {required ? <span className="text-danger"> *</span> : null}
         </label>
@@ -104,7 +106,7 @@ export const SearchField = forwardRef<HTMLInputElement, SearchFieldProps>(functi
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
         className={cn(
-          "w-full rounded-full bg-fill text-text placeholder:text-text-2 transition-[background-color,box-shadow] focus:bg-surface focus:outline-none focus:shadow-[0_0_0_3px_var(--accent-soft),inset_0_0_0_1px_var(--accent)] [&::-webkit-search-cancel-button]:hidden",
+          "w-full rounded-full bg-fill text-text placeholder:text-text-2 transition-[background-color,box-shadow] focus:bg-surface focus:outline-none focus:shadow-[0_0_0_4px_var(--fill),inset_0_0_0_1px_var(--separator-strong)] [&::-webkit-search-cancel-button]:hidden",
           size === "sm" ? "h-9 pl-8 pr-8 text-[13px]" : "h-11 pl-10 pr-10 text-[15px]",
           className,
         )}
@@ -171,7 +173,7 @@ export function Switch({ checked, onChange, label, description, disabled }: { ch
 /** Vertical stack of fields with consistent spacing. */
 export function Form({ className, children, ...props }: React.FormHTMLAttributes<HTMLFormElement>) {
   return (
-    <form className={cn("flex flex-col gap-4", className)} noValidate {...props}>
+    <form className={cn("flex flex-col gap-5", className)} noValidate {...props}>
       {children}
     </form>
   );
@@ -186,7 +188,7 @@ export function FormSection({ title, description, children, className }: { title
           {title}
         </legend>
       ) : null}
-      <div className="flex flex-col gap-4 rounded-[14px] bg-surface-2 p-4">{children}</div>
+      <div className="flex flex-col gap-5 rounded-[14px] bg-surface-2 p-4">{children}</div>
       {description ? <p className="t-footnote mt-2 px-1 text-text-2">{description}</p> : null}
     </fieldset>
   );

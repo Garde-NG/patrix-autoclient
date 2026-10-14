@@ -84,7 +84,7 @@ export function SourceSheet({ orgId, open, onClose, source, onSaved }: { orgId: 
         </Button>
       }
     >
-      <form id="source-form" onSubmit={submit} className="flex flex-col gap-4 pb-2">
+      <form id="source-form" onSubmit={submit} className="flex flex-col gap-5 pb-2">
         {mutation.error && !Object.keys(fields).length ? (
           <p role="alert" className="t-footnote rounded-[10px] bg-danger-soft px-3.5 py-2.5 text-danger">
             {mutation.error.message}

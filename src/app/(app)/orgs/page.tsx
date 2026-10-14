@@ -155,7 +155,7 @@ function CreateOrgSheet({ open, onClose }: { open: boolean; onClose: () => void 
 
   return (
     <Sheet open={open} onClose={onClose} title="New workspace" description="You'll be its owner. Invite teammates from Settings.">
-      <form id="create-org" onSubmit={submit} className="flex flex-col gap-4 pb-2">
+      <form id="create-org" onSubmit={submit} className="flex flex-col gap-5 pb-2">
         {create.error && !Object.keys(fields).length ? (
           <p role="alert" className="t-footnote rounded-[10px] bg-danger-soft px-3.5 py-2.5 text-danger">
             {create.error.message}

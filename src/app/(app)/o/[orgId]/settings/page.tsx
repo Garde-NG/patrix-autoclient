@@ -70,7 +70,7 @@ function General() {
       <Card className="lg:col-span-2">
         <CardHeader title="Workspace" description={isAdmin ? "The name appears in navigation and notifications." : "Only admins can change these."} />
         <CardBody>
-          <form onSubmit={submit} className="flex flex-col gap-4">
+          <form onSubmit={submit} className="flex flex-col gap-5">
             <Input label="Name" value={name} onChange={(e) => setName(e.target.value)} disabled={!isAdmin} error={fields.name} maxLength={120} required />
             <Input label="Slug" value={org.slug} readOnly disabled hint="Used in URLs. Fixed after creation." />
             {isAdmin ? (
@@ -258,7 +258,7 @@ function InviteSheet({ orgId, open, onClose, canInviteAdmins }: { orgId: string;
           </Button>
         </div>
       ) : (
-        <form onSubmit={submit} className="flex flex-col gap-4 pb-2">
+        <form onSubmit={submit} className="flex flex-col gap-5 pb-2">
           {create.error && !Object.keys(fields).length ? <p role="alert" className="t-footnote rounded-[10px] bg-danger-soft px-3.5 py-2.5 text-danger">{create.error.message}</p> : null}
           <Input label="Email" type="email" inputMode="email" autoCapitalize="none" required value={email} onChange={(e) => setEmail(e.target.value)} error={fields.email} autoFocus />
           <Select

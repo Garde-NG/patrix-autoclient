@@ -61,7 +61,7 @@ export default function AccountPage() {
         <Card className="mb-6">
           <CardHeader title="Change password" description="Every signed-in device will be signed out, including this one." />
           <CardBody>
-            <form onSubmit={submit} className="flex flex-col gap-4">
+            <form onSubmit={submit} className="flex flex-col gap-5">
               {change.error && !Object.keys(fields).length ? (
                 <p role="alert" className="t-footnote rounded-[10px] bg-danger-soft px-3.5 py-2.5 text-danger">
                   {change.error.message}

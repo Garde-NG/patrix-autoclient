@@ -42,7 +42,7 @@ function LoginForm() {
         </>
       }
     >
-      <form onSubmit={submit} className="flex flex-col gap-4" noValidate>
+      <form onSubmit={submit} className="flex flex-col gap-5" noValidate>
         {reason && REASONS[reason] ? (
           <p role="status" className="t-footnote rounded-[10px] bg-accent-soft px-3.5 py-2.5 text-accent">
             {REASONS[reason]}

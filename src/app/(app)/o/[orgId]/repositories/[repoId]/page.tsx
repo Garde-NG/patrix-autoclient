@@ -246,7 +246,7 @@ function BranchSheet({ open, onClose, current, onSave, saving }: { open: boolean
   };
   return (
     <Sheet open={open} onClose={onClose} title="Change watched branch" description="Pushes to this branch trigger a re-scan. Repairs are proposed against it.">
-      <form onSubmit={submit} className="flex flex-col gap-4 pb-2">
+      <form onSubmit={submit} className="flex flex-col gap-5 pb-2">
         <Input label="Branch" value={branch} onChange={(e) => setBranch(e.target.value)} autoFocus required />
         <Button type="submit" size="lg" loading={saving} disabled={!branch.trim() || branch.trim() === current}>
           Save

@@ -34,7 +34,7 @@ export default function SignupPage() {
         </>
       }
     >
-      <form onSubmit={submit} className="flex flex-col gap-4" noValidate>
+      <form onSubmit={submit} className="flex flex-col gap-5" noValidate>
         <FormError message={signIn.error?.message ?? null} />
         <Input label="Your name" name="name" autoComplete="name" required value={form.name} onChange={set("name")} autoFocus />
         <Input

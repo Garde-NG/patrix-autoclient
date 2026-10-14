@@ -171,7 +171,7 @@ export function Select<T extends string = string>({
             onClick={() => (open ? setOpen(false) : openList())}
             onKeyDown={onKeyDown}
             className={cn(
-              "pressable flex w-full min-w-0 items-center justify-between gap-2 rounded-[11px] border border-separator bg-surface text-left text-text shadow-1 transition-[border-color,box-shadow] hover:bg-surface-2 focus:outline-none focus-visible:border-accent focus-visible:shadow-[0_0_0_3px_var(--accent-soft)] disabled:opacity-50",
+              "pressable flex w-full min-w-0 items-center justify-between gap-2 rounded-[11px] border border-separator bg-surface text-left text-text shadow-1 transition-[border-color,box-shadow] hover:border-separator-strong hover:bg-surface-2 focus:outline-none focus-visible:border-separator-strong focus-visible:shadow-[0_0_0_4px_var(--fill)] disabled:opacity-50",
               size === "sm" ? "h-9 px-3 text-[13px]" : "h-11 px-3.5 text-[15px]",
               error && "border-danger",
               className,

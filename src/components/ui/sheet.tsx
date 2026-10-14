@@ -111,7 +111,7 @@ export function Sheet({ open, onClose, title, description, children, footer, siz
                 <X className="size-4" />
               </button>
             </header>
-            <div className="scroll-thin min-h-0 flex-1 overflow-y-auto px-5 pb-5">{children}</div>
+            <div className="scroll-thin min-h-0 flex-1 overflow-y-auto px-5 pb-5 pt-2">{children}</div>
             {footer ? <footer className="safe-bottom border-t border-separator px-5 py-4">{footer}</footer> : null}
           </motion.div>
         </div>

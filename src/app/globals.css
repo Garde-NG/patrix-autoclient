@@ -162,8 +162,14 @@ html.theme-transition * {
 :focus-visible {
   outline: 3px solid var(--accent-soft);
   outline-offset: 2px;
-  box-shadow: 0 0 0 1px var(--accent);
-  border-radius: var(--radius-sm);
+}
+/* Form controls draw their own quiet focus state; no outline on top of their border. */
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible,
+[role="combobox"]:focus-visible,
+[role="searchbox"]:focus-visible {
+  outline: none;
 }
 
 button,

@@ -275,7 +275,7 @@ function UploadSheet({ orgId, sourceId, open, onClose }: { orgId: string; source
         </Button>
       }
     >
-      <form id="upload-form" onSubmit={submit} className="flex flex-col gap-4 pb-2">
+      <form id="upload-form" onSubmit={submit} className="flex flex-col gap-5 pb-2">
         <label className="pressable flex cursor-pointer items-center justify-center gap-2 rounded-[14px] border border-dashed border-separator-strong bg-surface-2 px-4 py-6 text-[14px] text-text-2 hover:bg-fill">
           <Download className="size-4" />
           {fileName ?? "Choose a .json or .yaml file"}
