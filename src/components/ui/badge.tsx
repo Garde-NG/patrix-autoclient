@@ -22,64 +22,72 @@ export function Badge({ tone = "neutral", className, children, dot }: { tone?: T
   );
 }
 
-/** One place that knows which status means what, so colours stay consistent across the app. */
+/**
+ * One place that knows which status means what, so colours stay consistent across the app.
+ * Green = healthy or finished well; red = broken or needs you; amber = waiting or degraded;
+ * blue = in progress; purple = a repair is on offer; grey = nothing to act on.
+ */
+const TONE_BY_STATUS: Record<string, Tone> = {
+  // Healthy / finished well
+  connected: "success",
+  active: "success",
+  succeeded: "success",
+  verified: "success",
+  delivered: "success",
+  merged: "success",
+  resolved: "success",
+  completed: "success",
+  paid: "success",
+  passed: "success",
+  done: "success",
+  // Broken / needs attention
+  breaking: "danger",
+  failed: "danger",
+  dead: "danger",
+  errored: "danger",
+  confirmed_incompatibility: "danger",
+  verification_failed: "danger",
+  closed: "danger",
+  suspended: "danger",
+  removed: "danger",
+  inaccessible: "danger",
+  past_due: "danger",
+  unpaid: "danger",
+  incomplete_expired: "danger",
+  // Waiting / degraded
+  warning: "warning",
+  potential_risk: "warning",
+  likely_impact: "warning",
+  paused: "warning",
+  pending: "warning",
+  queued: "warning",
+  cancelled: "warning",
+  stale: "warning",
+  incomplete: "warning",
+  expired: "warning",
+  // In progress
+  running: "accent",
+  generating: "accent",
+  verifying: "accent",
+  delivering: "accent",
+  open: "accent",
+  trialing: "accent",
+  // A repair is on offer
+  repair_available: "purple",
+  generated: "purple",
+};
+
 export function toneFor(value: string | null | undefined): Tone {
-  switch (value) {
-    case "breaking":
-    case "failed":
-    case "dead":
-    case "errored":
-    case "confirmed_incompatibility":
-    case "verification_failed":
-    case "closed":
-    case "suspended":
-    case "removed":
-    case "past_due":
-      return "danger";
-    case "warning":
-    case "potential_risk":
-    case "likely_impact":
-    case "paused":
-    case "pending":
-    case "queued":
-    case "cancelled":
-      return "warning";
-    case "succeeded":
-    case "verified":
-    case "delivered":
-    case "merged":
-    case "resolved":
-    case "active":
-    case "completed":
-    case "paid":
-    case "passed":
-    case "done":
-      return "success";
-    case "repair_available":
-    case "generated":
-      return "purple";
-    case "running":
-    case "generating":
-    case "verifying":
-    case "delivering":
-    case "open":
-    case "trialing":
-      return "accent";
-    case "informational":
-    case "dismissed":
-    case "skipped":
-    case "not_configured":
-    default:
-      return "neutral";
-  }
+  return (value && TONE_BY_STATUS[value]) || "neutral";
 }
 
 const LIVE = new Set(["running", "generating", "verifying", "delivering", "pending", "queued"]);
 
 export function StatusBadge({ status, className, label }: { status: string | null | undefined; className?: string; label?: string }) {
   if (!status) return null;
+  const tone = toneFor(status);
   return (
-    <Badge tone={toneFor(status)} className={className} dot={LIVE.has(status)}>
+    <Badge tone={tone} className={className} dot={LIVE.has(status) || tone === "success" || tone === "danger"}>
       <span className={cn(LIVE.has(status) && "[&_+_*]:animate-pulse")}>{label ?? humanize(status)}</span>
     </Badge>
   );

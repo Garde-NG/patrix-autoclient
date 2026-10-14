@@ -13,7 +13,11 @@ export function proxy(request: NextRequest) {
     request.cookies.has(SESSION_COOKIE) || request.cookies.getAll().some((c) => c.name.startsWith(`${SESSION_COOKIE}.`));
 
   if (PUBLIC_PATHS.has(pathname)) {
-    if (hasSession) return NextResponse.redirect(new URL("/orgs?auto=1", request.url));
+    // A session cookie means "already signed in", except when we were sent here because that
+    // very session is dead (?reason=...). Bouncing back into the app then would loop.
+    if (hasSession && !request.nextUrl.searchParams.has("reason")) {
+      return NextResponse.redirect(new URL("/orgs?auto=1", request.url));
+    }
     return NextResponse.next();
   }
 

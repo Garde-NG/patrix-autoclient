@@ -32,20 +32,27 @@ export function Sheet({ open, onClose, title, description, children, footer, siz
   const y = useMotionValue(0);
   const drag = useDragControls();
   const panelRef = useRef<HTMLDivElement>(null);
+  // Parents pass a fresh arrow every render; read it through a ref so the open/close effect runs
+  // only on open, never on every parent re-render (which used to re-focus the first field).
+  const onCloseRef = useRef(onClose);
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  });
 
   useEffect(() => {
     if (!open) return;
     const prev = document.body.style.overflow;
     document.body.style.overflow = "hidden";
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && onCloseRef.current();
     window.addEventListener("keydown", onKey);
     const focusable = panelRef.current?.querySelector<HTMLElement>("input, textarea, select, button:not([data-close])");
-    window.setTimeout(() => focusable?.focus({ preventScroll: true }), 50);
+    const timer = window.setTimeout(() => focusable?.focus({ preventScroll: true }), 50);
     return () => {
+      window.clearTimeout(timer);
       document.body.style.overflow = prev;
       window.removeEventListener("keydown", onKey);
     };
-  }, [open, onClose]);
+  }, [open]);
 
   const onDragEnd = (_: unknown, info: PanInfo) => {
     const height = panelRef.current?.offsetHeight ?? 600;

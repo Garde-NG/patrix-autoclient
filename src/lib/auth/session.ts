@@ -21,10 +21,14 @@ export async function getValidToken(options: { persist: boolean }): Promise<AppT
   return refreshed;
 }
 
-/** Server-component guard: redirects to the sign-in page when there is no live session. */
+/**
+ * Server-component guard. A dead session goes through /api/auth/expired, which can clear the
+ * cookie before showing sign-in; redirecting to /login directly would loop, because the proxy
+ * sends any request that still carries a session cookie back into the app.
+ */
 export const requireUser = cache(async (): Promise<User> => {
   const token = await getValidToken({ persist: false });
-  if (!token || !isAuthenticated(token)) redirect("/login?reason=expired");
+  if (!token || !isAuthenticated(token)) redirect("/api/auth/expired");
   return token.user;
 });
 
