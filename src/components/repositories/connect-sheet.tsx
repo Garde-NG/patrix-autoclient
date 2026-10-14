@@ -1,9 +1,9 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
-import { ExternalLink, Lock } from "lucide-react";
+import { ChevronDown, ExternalLink, GitBranch, Lock } from "lucide-react";
 import { GithubIcon as Github } from "@/components/icons";
-import { Badge, MockBadge } from "@/components/ui/badge";
+import { MockBadge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input, SearchField } from "@/components/ui/field";
 import { OptionList } from "@/components/ui/option-list";
@@ -12,7 +12,7 @@ import { Sheet } from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "@/components/ui/toast";
 import { ApiError } from "@/lib/api/client";
-import { useAvailableRepos, useInstallations, useInstallUrl, useLinkInstallation } from "@/lib/api/hooks/github";
+import { useAvailableRepos, useBranches, useInstallations, useInstallUrl, useLinkInstallation } from "@/lib/api/hooks/github";
 import { useConnectRepository } from "@/lib/api/hooks/repositories";
 import type { Repository } from "@/lib/api/types";
 import { cn } from "@/lib/utils";
@@ -27,13 +27,17 @@ export function ConnectRepositorySheet({ orgId, open, onClose, onConnected }: { 
   const [selected, setSelected] = useState<string>("");
   const [branch, setBranch] = useState("");
   const [filter, setFilter] = useState("");
+  const branches = useBranches(orgId, effectiveInstallation, selected || null);
+  const selectedRepo = repos.data?.find((r) => r.full_name === selected);
+  // The default branch is preselected until a person picks another one.
+  const effectiveBranch = branch || branches.data?.find((b) => b.is_default)?.name || selectedRepo?.default_branch || "";
   const fields = connect.error instanceof ApiError ? connect.error.fields : {};
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
     if (!effectiveInstallation || !selected) return;
     connect.mutate(
-      { installation_id: effectiveInstallation, full_name: selected, ...(branch.trim() ? { branch: branch.trim() } : {}) },
+      { installation_id: effectiveInstallation, full_name: selected, ...(effectiveBranch.trim() ? { branch: effectiveBranch.trim() } : {}) },
       {
         onSuccess: (r) => {
           toast.success("Repository connected", "The first scan has been queued.");
@@ -115,7 +119,30 @@ export function ConnectRepositorySheet({ orgId, open, onClose, onConnected }: { 
               }))}
             />
           )}
-          {selected ? <Input label="Branch" value={branch} onChange={(e) => setBranch(e.target.value)} placeholder={repos.data?.find((r) => r.full_name === selected)?.default_branch ?? "default branch"} hint="Leave empty to watch the default branch." error={fields.branch} /> : null}
+          {selected ? (
+            branches.isError ? (
+              <Input label="Branch" value={branch} onChange={(e) => setBranch(e.target.value)} placeholder={selectedRepo?.default_branch ?? "main"} hint="Couldn't list branches; type the branch to watch." error={fields.branch} />
+            ) : (
+              <Select
+                label="Branch to watch"
+                value={effectiveBranch}
+                onChange={setBranch}
+                disabled={branches.isPending}
+                placeholder={branches.isPending ? "Loading branches…" : "Choose a branch"}
+                error={fields.branch}
+                hint="Pushes to this branch trigger a re-scan, and repairs are proposed against it."
+                options={(branches.data ?? []).map((b) => ({
+                  value: b.name,
+                  label: (
+                    <span className="inline-flex items-center gap-1.5">
+                      <GitBranch className="size-3.5 text-text-2" /> {b.name}
+                    </span>
+                  ),
+                  description: b.is_default ? "Default branch" : b.protected ? "Protected" : undefined,
+                }))}
+              />
+            )
+          ) : null}
         </form>
       )}
     </Sheet>
@@ -126,6 +153,7 @@ export function LinkInstallation({ orgId, compact }: { orgId: string; compact?: 
   const installUrl = useInstallUrl(orgId, true);
   const link = useLinkInstallation(orgId);
   const [id, setId] = useState("");
+  const [manual, setManual] = useState(false);
   const isMock = installUrl.data?.is_mock;
 
   const submit = (e: FormEvent) => {
@@ -136,28 +164,47 @@ export function LinkInstallation({ orgId, compact }: { orgId: string; compact?: 
   return (
     <div className={cn("flex flex-col gap-4", !compact && "pb-2")}>
       <div className="rounded-[14px] bg-surface-2 p-4">
-        <p className="t-headline text-text">1. Install the GitHub App</p>
-        <p className="t-footnote mt-1 text-text-2">{installUrl.data?.note ?? "AutoAPI needs read access to code and metadata, plus pull-request write access to deliver repairs."}</p>
+        <p className="t-headline text-text">Install the GitHub App</p>
+        <p className="t-footnote mt-1 text-text-2">
+          {isMock
+            ? installUrl.data?.note
+            : "AutoAPI needs read access to code and metadata, plus pull-request write access to deliver repairs. GitHub brings you straight back here and the installation is linked for you."}
+        </p>
         {installUrl.data?.url ? (
-          <a href={installUrl.data.url} target="_blank" rel="noreferrer" className="mt-3 inline-flex">
-            <Button variant="secondary" size="sm" trailing={<ExternalLink className="size-3.5" />}>
-              Open GitHub
+          <a href={installUrl.data.url} className="mt-3 inline-flex">
+            <Button leading={<Github className="size-4" />} trailing={<ExternalLink className="size-3.5" />}>
+              Install on GitHub
             </Button>
           </a>
         ) : null}
-        {isMock ? <Badge tone="warning" className="mt-3">Development mock: use installation id 1</Badge> : null}
-      </div>
-      <form onSubmit={submit} className="rounded-[14px] bg-surface-2 p-4">
-        <p className="t-headline text-text">2. Link the installation</p>
-        <p className="t-footnote mt-1 text-text-2">After installing, GitHub redirects with an installation id. Paste it here.</p>
-        <div className="mt-3 flex items-end gap-2">
-          <Input label="Installation id" inputMode="numeric" pattern="[0-9]+" value={id} onChange={(e) => setId(e.target.value.replace(/\D/g, ""))} wrapperClassName="flex-1" error={link.error instanceof ApiError ? link.error.fields.installation_id : null} />
-          <Button type="submit" loading={link.isPending} disabled={!id} className="h-11">
-            Link
+        {isMock ? (
+          <Button className="mt-3" variant="tinted" size="sm" loading={link.isPending} onClick={() => link.mutate(1, { onSuccess: () => toast.success("Mock installation linked") })}>
+            Link the mock installation
           </Button>
+        ) : null}
+      </div>
+      {!isMock ? (
+        <div className="rounded-[14px] bg-surface-2">
+          <button type="button" onClick={() => setManual((v) => !v)} className="flex w-full items-center justify-between px-4 py-3 text-left" aria-expanded={manual}>
+            <span>
+              <span className="t-body block font-medium text-text">Link an existing installation</span>
+              <span className="t-footnote block text-text-2">Already installed? Paste the installation id from GitHub.</span>
+            </span>
+            <ChevronDown className={cn("size-4 shrink-0 text-text-2 transition-transform", manual && "rotate-180")} />
+          </button>
+          {manual ? (
+            <form onSubmit={submit} className="border-t border-separator px-4 pb-4 pt-3">
+              <div className="flex items-end gap-2">
+                <Input label="Installation id" inputMode="numeric" pattern="[0-9]+" value={id} onChange={(e) => setId(e.target.value.replace(/\D/g, ""))} wrapperClassName="flex-1" hint="GitHub → Settings → Applications → Configure; the number at the end of the URL." error={link.error instanceof ApiError ? link.error.fields.installation_id : null} />
+                <Button type="submit" loading={link.isPending} disabled={!id} className="mb-7 h-11">
+                  Link
+                </Button>
+              </div>
+              {link.error && !(link.error instanceof ApiError && Object.keys(link.error.fields).length) ? <p className="t-footnote mt-2 text-danger">{link.error.message}</p> : null}
+            </form>
+          ) : null}
         </div>
-        {link.error && !(link.error instanceof ApiError && Object.keys(link.error.fields).length) ? <p className="t-footnote mt-2 text-danger">{link.error.message}</p> : null}
-      </form>
+      ) : null}
     </div>
   );
 }

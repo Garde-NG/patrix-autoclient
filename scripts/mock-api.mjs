@@ -97,6 +97,7 @@ createServer(async (req, res) => {
   if (path === "orgs" && req.method === "GET") return ok(res, [{ ...org, role: "owner" }, { ...org2, role: "member" }]);
   if (path === "orgs" && req.method === "POST") { const o = { id: randomUUID(), name: body.name, slug: body.slug ?? body.name.toLowerCase().replace(/\W+/g, "-"), plan_code: "free", settings: {}, created_at: now() }; return ok(res, o, "Created.", 201); }
   if (path === "invites/accept") return ok(res, org2);
+  if (path === "github/setup") return body.state?.startsWith(org.id) ? ok(res, { organization_id: org.id, installation: db.installations[0], already_linked: false }) : fail(res, 422, "This GitHub setup link is invalid or was not started from this workspace.");
   if (seg[0] !== "orgs") return fail(res, 404, "Not found.");
   const orgId = seg[1];
   if (orgId !== org.id && orgId !== org2.id) return fail(res, 404, "Organization not found.");
@@ -121,6 +122,7 @@ createServer(async (req, res) => {
   if (r0 === "github") {
     if (r1 === "install-url") return ok(res, { url: null, is_mock: true, note: "Development mock: fixture repositories are served as installation 1." });
     if (r1 === "installations" && !r2) return req.method === "POST" ? ok(res, db.installations[0], "Linked.", 201) : ok(res, scoped(db.installations));
+    if (r1 === "installations" && r3 === "repositories" && rest[6] === "branches") return ok(res, [{ name: "main", is_default: true, protected: true }, { name: "develop", is_default: false, protected: false }, { name: "release/2026-10", is_default: false, protected: false }]);
     if (r1 === "installations" && r3 === "repositories") return ok(res, [{ github_repo_id: 1, full_name: "autoapi-dev/checkout-service", default_branch: "main", is_private: true, html_url: "https://github.com/autoapi-dev/checkout-service", is_mock: true, connected_repository_id: repoId }, { github_repo_id: 2, full_name: "autoapi-dev/notifications-worker", default_branch: "main", is_private: false, html_url: "https://github.com/autoapi-dev/notifications-worker", is_mock: true, connected_repository_id: null }]);
     if (r1 === "installations" && req.method === "DELETE") return ok(res, null);
   }

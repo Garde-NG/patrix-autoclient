@@ -298,6 +298,18 @@ export interface Installation {
   created_at: ISODate;
 }
 
+export interface Branch {
+  name: string;
+  is_default: boolean;
+  protected: boolean;
+}
+
+export interface SetupResult {
+  organization_id: UUID;
+  installation: Installation;
+  already_linked: boolean;
+}
+
 export interface AvailableRepo {
   github_repo_id: number;
   full_name: string;

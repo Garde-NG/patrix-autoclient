@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 import { ChevronRight, FolderGit2, Lock, Plus } from "lucide-react";
 import { ConnectRepositorySheet } from "@/components/repositories/connect-sheet";
 import { useOrgContext } from "@/components/shell/org-provider";
@@ -18,10 +19,21 @@ import { pluralize, timeAgo } from "@/lib/utils";
 const DEFAULTS = {};
 
 export default function RepositoriesPage() {
+  return (
+    <Suspense>
+      <Repositories />
+    </Suspense>
+  );
+}
+
+function Repositories() {
   const { orgId, isAdmin } = useOrgContext();
+  const router = useRouter();
+  const search = useSearchParams();
   const { params, setPage } = useListParams(DEFAULTS);
   const query = useRepositories(orgId, { page: params.page, page_size: 20 });
-  const [connecting, setConnecting] = useState(false);
+  // Arriving from the GitHub setup redirect with ?connect=1 opens the sheet immediately.
+  const [connecting, setConnecting] = useState(search.get("connect") === "1");
 
   return (
     <>
@@ -68,7 +80,14 @@ export default function RepositoriesPage() {
           </ListGroup>
         )}
       </ListShell>
-      <ConnectRepositorySheet orgId={orgId} open={connecting} onClose={() => setConnecting(false)} />
+      <ConnectRepositorySheet
+        orgId={orgId}
+        open={connecting}
+        onClose={() => {
+          setConnecting(false);
+          if (search.get("connect")) router.replace(`/o/${orgId}/repositories`, { scroll: false });
+        }}
+      />
     </>
   );
 }

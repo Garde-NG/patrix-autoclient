@@ -3,7 +3,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "../client";
 import { qk } from "../keys";
-import type { AvailableRepo, Installation, InstallUrl } from "../types";
+import type { AvailableRepo, Branch, Installation, InstallUrl, SetupResult } from "../types";
 
 export function useInstallUrl(orgId: string, enabled: boolean) {
   return useQuery({
@@ -46,5 +46,24 @@ export function useAvailableRepos(orgId: string, installationRowId: string | nul
     queryFn: () => api.get<AvailableRepo[]>(`orgs/${orgId}/github/installations/${installationRowId}/repositories`),
     enabled: !!installationRowId,
     staleTime: 60_000,
+  });
+}
+
+export function useBranches(orgId: string, installationRowId: string | null, fullName: string | null) {
+  return useQuery({
+    queryKey: ["orgs", orgId, "github", "installations", installationRowId ?? "", "branches", fullName ?? ""],
+    queryFn: () => api.get<Branch[]>(`orgs/${orgId}/github/installations/${installationRowId}/repositories/${fullName}/branches`),
+    enabled: !!installationRowId && !!fullName,
+    staleTime: 60_000,
+  });
+}
+
+/** Finishes GitHub's post-install redirect; the signed `state` names the workspace. */
+export function useCompleteGitHubSetup() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (body: { installation_id: number; state: string }) => api.post<SetupResult>("github/setup", body),
+    onSuccess: (r) => qc.invalidateQueries({ queryKey: qk.installations(r.organization_id) }),
+    meta: { silent: true },
   });
 }
