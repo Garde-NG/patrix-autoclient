@@ -162,7 +162,15 @@ createServer(async (req, res) => {
     if (r2 === "fetch") return ok(res, { job_id: randomUUID() }, "Fetch queued.", 202);
   }
   if (r0 === "repositories") {
-    if (r2 === "scans" && !r3) return ok(res, page(db.scans, url.searchParams));
+    if (r2 === "scans" && !r3) {
+      // Live scans settle ~6s after they were queued so the UI's "scan finished" path is exercised.
+      for (const s of db.scans) {
+        if ((s.status === "queued" || s.status === "running") && Date.now() - new Date(s.created_at).getTime() > 6000) {
+          Object.assign(s, { status: "succeeded", commit_sha: "a1b2c3d4e5f6a7b8", integrations_found: 3, started_at: s.started_at ?? s.created_at, finished_at: now(), stats: { files: 412, manifests: 2, source_files_analyzed: 118 } });
+        }
+      }
+      return ok(res, page(db.scans, url.searchParams));
+    }
     if (r2 === "scans") return ok(res, db.scans[0]);
     if (r2 === "scan") { const s = { ...db.scans[1], id: randomUUID(), status: "queued", created_at: now() }; db.scans.unshift(s); return ok(res, s, "Scan queued.", 202); }
   }

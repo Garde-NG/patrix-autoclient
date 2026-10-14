@@ -3,6 +3,7 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "../client";
 import { qk } from "../keys";
+import { useOnSettled } from "@/lib/query/use-on-settled";
 import type { Paginated, RepairFilters, RepairJob, RepairJobDetail, RepairStatus } from "../types";
 
 export const LIVE_REPAIR: ReadonlySet<RepairStatus> = new Set<RepairStatus>(["queued", "generating", "generated", "verifying", "delivering"]);
@@ -18,19 +19,21 @@ export function useRepairs(orgId: string, filters: RepairFilters = {}) {
 
 export function useRepair(orgId: string, jobId: string) {
   const qc = useQueryClient();
-  return useQuery({
+  const query = useQuery({
     queryKey: qk.repairs(orgId).detail(jobId),
     queryFn: () => api.get<RepairJobDetail>(`orgs/${orgId}/repairs/${jobId}`),
-    refetchInterval: (q) => {
-      const status = q.state.data?.status;
-      if (status && LIVE_REPAIR.has(status)) return 3000;
-      if (q.state.dataUpdateCount > 1) {
-        qc.invalidateQueries({ queryKey: qk.findings(orgId).all });
-        qc.invalidateQueries({ queryKey: qk.pullRequests(orgId).all });
-      }
-      return false;
-    },
+    // Poll while the repair is in flight. Side effects must not live in this callback (see useOnSettled).
+    refetchInterval: (q) => (q.state.data && LIVE_REPAIR.has(q.state.data.status) ? 3000 : false),
   });
+
+  // The repair just finished: its finding and any pull request it delivered changed too.
+  const live = query.data ? LIVE_REPAIR.has(query.data.status) : undefined;
+  useOnSettled(live, () => {
+    qc.invalidateQueries({ queryKey: qk.findings(orgId).all });
+    qc.invalidateQueries({ queryKey: qk.pullRequests(orgId).all });
+  });
+
+  return query;
 }
 
 type RepairAction = "retry" | "deliver" | "cancel";

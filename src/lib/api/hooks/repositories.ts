@@ -3,6 +3,7 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "../client";
 import { qk } from "../keys";
+import { useOnSettled } from "@/lib/query/use-on-settled";
 import type { PageParams, Paginated, Repository, RepositoryConnect, RepositorySummary, RepositoryUpdate, Scan } from "../types";
 
 const LIVE = new Set(["queued", "running"]);
@@ -73,25 +74,22 @@ export function useScanNow(orgId: string, repoId: string) {
 
 export function useScans(orgId: string, repoId: string, params: PageParams = {}) {
   const qc = useQueryClient();
-  return useQuery({
+  const query = useQuery({
     queryKey: [...qk.scans(orgId, repoId), params],
-    queryFn: async ({ signal }) => {
-      const data = await api.get<Paginated<Scan>>(`orgs/${orgId}/repositories/${repoId}/scans`, { ...params }, signal);
-      return data;
-    },
+    queryFn: ({ signal }) => api.get<Paginated<Scan>>(`orgs/${orgId}/repositories/${repoId}/scans`, { ...params }, signal),
     placeholderData: keepPreviousData,
-    refetchInterval: (q) => {
-      const live = q.state.data?.items.some((s) => LIVE.has(s.status));
-      if (!live) {
-        // A scan just finished: the repository summary, integrations and findings changed too.
-        if (q.state.dataUpdateCount > 1) {
-          qc.invalidateQueries({ queryKey: qk.repositories(orgId).detail(repoId) });
-          qc.invalidateQueries({ queryKey: qk.integrations(orgId).all });
-          qc.invalidateQueries({ queryKey: qk.findings(orgId).all });
-        }
-        return false;
-      }
-      return 3000;
-    },
+    // Poll while a scan is queued or running. No side effects here: this callback runs on every
+    // observer update, so invalidating from it loops forever (see useOnSettled).
+    refetchInterval: (q) => (q.state.data?.items.some((s) => LIVE.has(s.status)) ? 3000 : false),
   });
+
+  // A scan just finished: the repository summary, integrations and findings changed too.
+  const live = query.data ? query.data.items.some((s) => LIVE.has(s.status)) : undefined;
+  useOnSettled(live, () => {
+    qc.invalidateQueries({ queryKey: qk.repositories(orgId).detail(repoId) });
+    qc.invalidateQueries({ queryKey: qk.integrations(orgId).all });
+    qc.invalidateQueries({ queryKey: qk.findings(orgId).all });
+  });
+
+  return query;
 }
