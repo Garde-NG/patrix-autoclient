@@ -18,7 +18,7 @@ export default function SignupPage() {
   const submit = (e: FormEvent) => {
     e.preventDefault();
     if (passwordTooShort) return;
-    signIn.mutate({ mode: "signup", ...form }, { onSuccess: () => router.replace("/orgs") });
+    signIn.mutate({ mode: "signup", ...form }, { onSuccess: () => router.replace("/orgs?auto=1") });
   };
 
   return (

@@ -95,7 +95,7 @@ export function compact<T extends object>(obj: T): Partial<T> {
   return Object.fromEntries(Object.entries(obj).filter(([, v]) => v !== undefined && v !== null && v !== "")) as Partial<T>;
 }
 
-export function safeReturnPath(value: string | null | undefined, fallback = "/orgs"): string {
+export function safeReturnPath(value: string | null | undefined, fallback = "/orgs?auto=1"): string {
   if (!value || !value.startsWith("/") || value.startsWith("//") || value.startsWith("/api")) return fallback;
   return value;
 }

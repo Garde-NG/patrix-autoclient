@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState, type FormEvent } from "react";
+import { Suspense, useEffect, useState, type FormEvent } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { ChevronRight, LogOut, Plus, UserRound } from "lucide-react";
 import { Wordmark } from "@/components/brand";
 import { AppearanceButton } from "@/components/shell/appearance-toggle";
@@ -29,17 +29,29 @@ export function rememberOrg(orgId: string) {
 }
 
 export default function OrgsPage() {
+  return (
+    <Suspense>
+      <Workspaces />
+    </Suspense>
+  );
+}
+
+function Workspaces() {
   const user = useUser();
   const router = useRouter();
+  const params = useSearchParams();
   const orgs = useOrgs();
   const signOut = useSignOut();
-  const [creating, setCreating] = useState(false);
+  // Arriving from the sidebar with ?new=1 opens the sheet straight away.
+  const [creating, setCreating] = useState(params.get("new") === "1");
 
-  // One workspace and nothing else to choose: go straight in. Returning users land on their last one.
+  // Right after sign-in (?auto=1) with a single workspace, go straight in. When people open this
+  // page on purpose (to create or switch), always show the list.
+  const autoEnter = params.get("auto") === "1";
   useEffect(() => {
-    if (!orgs.data) return;
+    if (!autoEnter || !orgs.data) return;
     if (orgs.data.length === 1) router.replace(`/o/${orgs.data[0].id}`);
-  }, [orgs.data, router]);
+  }, [autoEnter, orgs.data, router]);
 
   return (
     <div className="mx-auto flex min-h-dvh w-full max-w-xl flex-col px-4 pb-16 sm:px-6">
@@ -109,7 +121,13 @@ export default function OrgsPage() {
         </div>
       </main>
 
-      <CreateOrgSheet open={creating} onClose={() => setCreating(false)} />
+      <CreateOrgSheet
+        open={creating}
+        onClose={() => {
+          setCreating(false);
+          if (params.get("new")) router.replace("/orgs", { scroll: false });
+        }}
+      />
     </div>
   );
 }

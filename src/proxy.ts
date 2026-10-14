@@ -13,7 +13,7 @@ export function proxy(request: NextRequest) {
     request.cookies.has(SESSION_COOKIE) || request.cookies.getAll().some((c) => c.name.startsWith(`${SESSION_COOKIE}.`));
 
   if (PUBLIC_PATHS.has(pathname)) {
-    if (hasSession) return NextResponse.redirect(new URL("/orgs", request.url));
+    if (hasSession) return NextResponse.redirect(new URL("/orgs?auto=1", request.url));
     return NextResponse.next();
   }
 
