@@ -20,8 +20,8 @@ export const viewport: Viewport = {
   ],
 };
 
-/* Follows the system appearance (no app-specific switch) and applies it before first paint, then tracks changes. */
-const themeScript = `(function(){try{var m=matchMedia('(prefers-color-scheme: dark)');var a=function(){document.documentElement.classList.toggle('dark',m.matches)};a();m.addEventListener('change',a);}catch(e){}})();`;
+/* Applies the remembered appearance (or the system one) before first paint, then tracks system changes. */
+const themeScript = `(function(){try{var m=matchMedia('(prefers-color-scheme: dark)');var a=function(){var s=localStorage.getItem('autoapi.theme');document.documentElement.classList.toggle('dark',s?s==='dark':m.matches)};a();m.addEventListener('change',a);}catch(e){}})();`;
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (

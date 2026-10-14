@@ -9,6 +9,7 @@ import { Menu } from "@/components/ui/menu";
 import { useOrgs } from "@/lib/api/hooks/orgs";
 import { useSignOut } from "@/lib/api/hooks/account";
 import { cn, humanize } from "@/lib/utils";
+import { AppearanceRow } from "./appearance-toggle";
 import { activeSegment, NAV } from "./nav";
 import { useOrgContext } from "./org-provider";
 import { useUser } from "./user-provider";
@@ -62,6 +63,7 @@ export function Sidebar() {
         ))}
       </nav>
       <div className="border-t border-separator px-3 py-3">
+        <AppearanceRow className="mb-3 px-2" />
         <p className="t-caption mb-2 px-3 text-text-3">{humanize(org.plan_code)} plan</p>
         <UserMenu />
       </div>

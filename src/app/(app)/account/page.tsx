@@ -4,6 +4,7 @@ import { useState, type FormEvent } from "react";
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
 import { Wordmark } from "@/components/brand";
+import { AppearanceRow } from "@/components/shell/appearance-toggle";
 import { useUser } from "@/components/shell/user-provider";
 import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -47,6 +48,9 @@ export default function AccountPage() {
         </div>
 
         <ListGroup className="mb-6">
+          <div className="px-4 py-3">
+            <AppearanceRow />
+          </div>
           <dl className="divide-y divide-separator">
             <KeyValue label="Email" value={user.email} />
             <KeyValue label="Member since" value={formatDateTime(user.created_at)} />

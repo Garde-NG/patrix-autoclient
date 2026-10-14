@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ChevronRight, LogOut, Plus, UserRound } from "lucide-react";
 import { Wordmark } from "@/components/brand";
+import { AppearanceButton } from "@/components/shell/appearance-toggle";
 import { useUser } from "@/components/shell/user-provider";
 import { Avatar } from "@/components/ui/avatar";
 import { RoleBadge } from "@/components/ui/badge";
@@ -44,9 +45,12 @@ export default function OrgsPage() {
     <div className="mx-auto flex min-h-dvh w-full max-w-xl flex-col px-4 pb-16 sm:px-6">
       <header className="flex h-16 items-center justify-between">
         <Wordmark />
-        <Link href="/account" className="pressable flex size-11 items-center justify-center rounded-full hover:bg-fill" aria-label="Account">
-          <UserRound className="size-5 text-text-2" />
-        </Link>
+        <div className="flex items-center gap-0.5">
+          <AppearanceButton />
+          <Link href="/account" className="pressable flex size-11 items-center justify-center rounded-full hover:bg-fill" aria-label="Account">
+            <UserRound className="size-5 text-text-2" />
+          </Link>
+        </div>
       </header>
 
       <main className="flex-1 pt-6 sm:pt-12">

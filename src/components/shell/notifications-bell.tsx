@@ -6,7 +6,7 @@ import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { Bell, CheckCheck } from "lucide-react";
 import { useMarkAllRead, useMarkNotificationRead, useNotifications, useUnreadCount } from "@/lib/api/hooks/notifications";
 import { useOrgContext } from "./org-provider";
-import { Button } from "@/components/ui/button";
+import { Button, IconButton } from "@/components/ui/button";
 import { cn, timeAgo } from "@/lib/utils";
 import { notificationHref } from "@/components/notifications/notification-link";
 
@@ -36,10 +36,9 @@ export function NotificationsBell() {
 
   return (
     <div ref={ref} className="relative">
-      <button
-        type="button"
+      <IconButton
         onClick={() => setOpen((v) => !v)}
-        className="pressable relative flex size-11 items-center justify-center rounded-full text-text-2 hover:bg-fill"
+        className="relative"
         aria-label={count ? `Notifications, ${count} unread` : "Notifications"}
         aria-expanded={open}
       >
@@ -49,7 +48,7 @@ export function NotificationsBell() {
             {count > 99 ? "99+" : count}
           </span>
         ) : null}
-      </button>
+      </IconButton>
       <AnimatePresence>
         {open ? (
           <motion.div

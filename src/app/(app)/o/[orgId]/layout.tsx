@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { OrgProvider } from "@/components/shell/org-provider";
+import { PageTransition } from "@/components/shell/page-transition";
 import { Sidebar } from "@/components/shell/sidebar";
 import { TabBar } from "@/components/shell/tab-bar";
 import { TopBar } from "@/components/shell/top-bar";
@@ -12,7 +13,9 @@ export default async function OrgLayout({ children, params }: { children: ReactN
         <Sidebar />
         <div className="flex min-w-0 flex-1 flex-col">
           <TopBar />
-          <main className="mx-auto w-full min-w-0 max-w-6xl flex-1 overflow-x-clip px-4 pb-[calc(58px+env(safe-area-inset-bottom)+24px)] pt-5 sm:px-6 sm:pt-7 lg:pb-12">{children}</main>
+          <main className="mx-auto w-full min-w-0 max-w-6xl flex-1 overflow-x-clip px-4 pb-[calc(58px+env(safe-area-inset-bottom)+24px)] pt-5 sm:px-6 sm:pt-7 lg:pb-12">
+            <PageTransition>{children}</PageTransition>
+          </main>
         </div>
       </div>
       <TabBar />

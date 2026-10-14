@@ -2,6 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import { activeSegment, titleFor } from "./nav";
+import { AppearanceButton } from "./appearance-toggle";
 import { NotificationsBell } from "./notifications-bell";
 import { useOrgContext } from "./org-provider";
 import { OrgSwitcher, UserMenu } from "./sidebar";
@@ -19,7 +20,8 @@ export function TopBar() {
           <h1 className="truncate text-[17px] font-semibold tracking-[-0.015em] text-text">{title}</h1>
         </div>
         <div className="hidden lg:block" />
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-0.5">
+          <AppearanceButton />
           <NotificationsBell />
           <div className="lg:hidden">
             <UserMenu compact />

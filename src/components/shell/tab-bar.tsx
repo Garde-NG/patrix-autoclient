@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { Ellipsis } from "lucide-react";
 import { Sheet } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
+import { AppearanceRow } from "./appearance-toggle";
 import { activeSegment, NAV, TAB_KEYS } from "./nav";
 import { useOrgContext } from "./org-provider";
 
@@ -72,6 +73,7 @@ export function TabBar() {
             );
           })}
         </ul>
+        <AppearanceRow className="border-t border-separator pt-4" />
       </Sheet>
     </>
   );

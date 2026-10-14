@@ -2,9 +2,10 @@
 
 import { useMemo } from "react";
 import Link from "next/link";
-import { Radar } from "lucide-react";
+import { Radar, X } from "lucide-react";
 import { useOrgContext } from "@/components/shell/org-provider";
 import { Badge, SeverityBadge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { ListGroup } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Select } from "@/components/ui/select";
@@ -64,9 +65,9 @@ export default function ChangesPage() {
             options={[{ value: "", label: "All sources" }, ...(sources.data?.items.map((s) => ({ value: s.id, label: s.name })) ?? [])]}
           />
           {params.diff_id ? (
-            <button type="button" onClick={() => update({ diff_id: "" })} className="t-footnote shrink-0 rounded-full bg-accent-soft px-3 py-1.5 text-accent">
-              One diff run × clear
-            </button>
+            <Button variant="tinted" size="sm" className="shrink-0 rounded-full" onClick={() => update({ diff_id: "" })} trailing={<X className="size-3.5" />}>
+              One diff run
+            </Button>
           ) : null}
         </FilterBar>
       </Toolbar>

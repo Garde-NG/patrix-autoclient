@@ -250,9 +250,9 @@ function Attempt({ attempt: a, isCurrent }: { attempt: RepairAttemptDetail; isCu
         ))}
         {a.patch ? (
           <div>
-            <button type="button" onClick={() => setShowPatch((v) => !v)} className="t-footnote mb-2 font-semibold uppercase tracking-wide text-accent">
+            <Button variant="ghost" size="sm" className="-ml-2 mb-1" onClick={() => setShowPatch((v) => !v)}>
               {showPatch ? "Hide patch" : "Show patch"}
-            </button>
+            </Button>
             {showPatch ? <DiffView patch={a.patch} /> : null}
           </div>
         ) : null}

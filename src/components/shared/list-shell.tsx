@@ -8,6 +8,7 @@ import { ErrorState } from "@/components/ui/empty-state";
 import { Pagination } from "@/components/ui/pagination";
 import { ListSkeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
+import { Reveal } from "@/components/shell/page-transition";
 
 /** Handles the four list states once: loading, error, empty, data (+ pagination). */
 export function ListShell<T>({
@@ -26,13 +27,20 @@ export function ListShell<T>({
   className?: string;
 }) {
   if (query.isPending) return <ListSkeleton rows={rows} className={className} />;
-  if (query.isError) return <ErrorState message={messageOf(query.error)} onRetry={() => query.refetch()} className={className} />;
-  if (!query.data.items.length) return <>{empty}</>;
+  if (query.isError)
+    return (
+      <Reveal id="error">
+        <ErrorState message={messageOf(query.error)} onRetry={() => query.refetch()} className={className} />
+      </Reveal>
+    );
+  if (!query.data.items.length) return <Reveal id="empty">{empty}</Reveal>;
   return (
-    <div className={cn(query.isPlaceholderData && "opacity-60 transition-opacity", className)}>
-      {children(query.data.items)}
-      <Pagination meta={query.data.meta} onPage={onPage} isFetching={query.isFetching} />
-    </div>
+    <Reveal id="data">
+      <div className={cn("transition-opacity duration-200", query.isPlaceholderData && "opacity-60", className)}>
+        {children(query.data.items)}
+        <Pagination meta={query.data.meta} onPage={onPage} isFetching={query.isFetching} />
+      </div>
+    </Reveal>
   );
 }
 

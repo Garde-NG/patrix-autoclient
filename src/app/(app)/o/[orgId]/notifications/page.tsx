@@ -5,7 +5,7 @@ import Link from "next/link";
 import { BellOff, CheckCheck, X } from "lucide-react";
 import { notificationHref } from "@/components/notifications/notification-link";
 import { useOrgContext } from "@/components/shell/org-provider";
-import { Button } from "@/components/ui/button";
+import { Button, IconButton } from "@/components/ui/button";
 import { ListGroup } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { PageHeader } from "@/components/ui/page";
@@ -53,9 +53,9 @@ export default function NotificationsPage() {
                     {humanize(n.type)} · {formatDateTime(n.created_at)}
                   </span>
                 </Link>
-                <button type="button" onClick={() => dismiss.mutate(n.id)} className="pressable -mr-1 flex size-8 shrink-0 items-center justify-center rounded-full text-text-3 hover:bg-fill hover:text-text" aria-label="Dismiss">
+                <IconButton size="sm" className="-mr-1 shrink-0" onClick={() => dismiss.mutate(n.id)} aria-label="Dismiss">
                   <X className="size-4" />
-                </button>
+                </IconButton>
               </div>
             ))}
           </ListGroup>
