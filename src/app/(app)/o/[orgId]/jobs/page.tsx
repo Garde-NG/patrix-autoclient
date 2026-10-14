@@ -7,7 +7,7 @@ import { Badge, StatusBadge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { KeyValue, ListGroup } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
-import { Input } from "@/components/ui/field";
+import { SearchField } from "@/components/ui/field";
 import { Code, PageHeader } from "@/components/ui/page";
 import { Segmented } from "@/components/ui/segmented";
 import { Sheet } from "@/components/ui/sheet";
@@ -47,7 +47,7 @@ export default function JobsPage() {
               { value: "dead", label: "Dead" },
             ]}
           />
-          <Input value={params.kind} onChange={(e) => update({ kind: e.target.value })} placeholder="Kind, e.g. repo.scan" wrapperClassName="w-48 shrink-0" className="h-9 text-[13px] font-mono" aria-label="Kind" />
+          <SearchField size="sm" aria-label="Kind" wrapperClassName="w-52 shrink-0" className="font-mono" value={params.kind} onChange={(kind) => update({ kind })} placeholder="Kind, e.g. repo.scan" />
         </FilterBar>
       </Toolbar>
       <ListShell query={query} onPage={setPage} empty={<EmptyState icon={Activity} title="No jobs" description="Jobs appear when sources are fetched, repositories scanned or repairs requested." />}>

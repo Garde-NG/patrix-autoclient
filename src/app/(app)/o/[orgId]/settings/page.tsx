@@ -12,7 +12,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardBody, CardHeader, KeyValue, ListGroup, Row } from "@/components/ui/card";
 import { ConfirmDialog } from "@/components/ui/dialog";
 import { EmptyState } from "@/components/ui/empty-state";
-import { Input, Select } from "@/components/ui/field";
+import { Input, SearchField } from "@/components/ui/field";
+import { Select } from "@/components/ui/select";
 import { Menu } from "@/components/ui/menu";
 import { PageHeader } from "@/components/ui/page";
 import { Segmented } from "@/components/ui/segmented";
@@ -133,11 +134,18 @@ function Members() {
                 trailing={
                   <div className="flex items-center gap-2">
                     {canEdit ? (
-                      <Select value={m.role} onChange={(e) => updateRole.mutate({ memberId: m.id, role: e.target.value as OrgRole }, { onSuccess: () => toast.success("Role updated") })} wrapperClassName="w-32" className="h-9 text-[13px]" aria-label={`Role for ${m.name}`}>
-                        <option value="owner">Owner</option>
-                        <option value="admin">Admin</option>
-                        <option value="member">Member</option>
-                      </Select>
+                      <Select
+                        size="sm"
+                        aria-label={`Role for ${m.name}`}
+                        wrapperClassName="w-32"
+                        value={m.role}
+                        onChange={(role) => updateRole.mutate({ memberId: m.id, role: role as OrgRole }, { onSuccess: () => toast.success("Role updated") })}
+                        options={[
+                          { value: "owner", label: "Owner" },
+                          { value: "admin", label: "Admin" },
+                          { value: "member", label: "Member" },
+                        ]}
+                      />
                     ) : (
                       <RoleBadge role={m.role} />
                     )}
@@ -253,11 +261,17 @@ function InviteSheet({ orgId, open, onClose, canInviteAdmins }: { orgId: string;
         <form onSubmit={submit} className="flex flex-col gap-4 pb-2">
           {create.error && !Object.keys(fields).length ? <p role="alert" className="t-footnote rounded-[10px] bg-danger-soft px-3.5 py-2.5 text-danger">{create.error.message}</p> : null}
           <Input label="Email" type="email" inputMode="email" autoCapitalize="none" required value={email} onChange={(e) => setEmail(e.target.value)} error={fields.email} autoFocus />
-          <Select label="Role" value={role} onChange={(e) => setRole(e.target.value as OrgRole)} error={fields.role}>
-            <option value="member">Member — view and acknowledge</option>
-            <option value="admin">Admin — manage sources, repositories, repairs</option>
-            {canInviteAdmins ? <option value="owner">Owner — everything, including billing</option> : null}
-          </Select>
+          <Select
+            label="Role"
+            value={role}
+            onChange={(r) => setRole(r as OrgRole)}
+            error={fields.role}
+            options={[
+              { value: "member", label: "Member", description: "View findings and acknowledge them" },
+              { value: "admin", label: "Admin", description: "Manage sources, repositories and repairs" },
+              ...(canInviteAdmins ? [{ value: "owner", label: "Owner", description: "Everything, including billing" }] : []),
+            ]}
+          />
           <Button type="submit" size="lg" loading={create.isPending} disabled={!email.trim()}>
             Create invitation
           </Button>
@@ -351,7 +365,7 @@ function Audit() {
   const query = useAudit(orgId, { page, page_size: 25, action: action || undefined }, isAdmin);
   return (
     <div className="space-y-3">
-      <Input value={action} onChange={(e) => { setAction(e.target.value); setPage(1); }} placeholder="Filter by action, e.g. source.create" wrapperClassName="max-w-sm" className="h-9 text-[13px] font-mono" aria-label="Action" />
+      <SearchField size="sm" aria-label="Action" wrapperClassName="max-w-sm" className="font-mono" value={action} onChange={(v) => { setAction(v); setPage(1); }} placeholder="Filter by action, e.g. source.create" />
       <ListShell query={query} onPage={setPage} empty={<EmptyState icon={ScrollText} title="No audit events" />}>
         {(items) => (
           <ListGroup>

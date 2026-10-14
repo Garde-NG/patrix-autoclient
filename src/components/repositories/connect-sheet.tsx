@@ -5,7 +5,9 @@ import { ExternalLink, Lock } from "lucide-react";
 import { GithubIcon as Github } from "@/components/icons";
 import { Badge, MockBadge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input, Select } from "@/components/ui/field";
+import { Input, SearchField } from "@/components/ui/field";
+import { OptionList } from "@/components/ui/option-list";
+import { Select } from "@/components/ui/select";
 import { Sheet } from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "@/components/ui/toast";
@@ -69,63 +71,50 @@ export function ConnectRepositorySheet({ orgId, open, onClose, onConnected }: { 
             </p>
           ) : null}
           {active.length > 1 ? (
-            <Select label="Installation" value={effectiveInstallation ?? ""} onChange={(e) => { setInstallationId(e.target.value); setSelected(""); }}>
-              {active.map((i) => (
-                <option key={i.id} value={i.id}>
-                  {i.account_login} ({i.account_type}){i.is_mock ? " · mock" : ""}
-                </option>
-              ))}
-            </Select>
+            <Select
+              label="Installation"
+              value={effectiveInstallation ?? ""}
+              onChange={(v) => {
+                setInstallationId(v);
+                setSelected("");
+              }}
+              options={active.map((i) => ({ value: i.id, label: i.account_login, description: `${i.account_type}${i.is_mock ? " · mock" : ""}` }))}
+            />
           ) : null}
-          <Input label="Search repositories" value={filter} onChange={(e) => setFilter(e.target.value)} placeholder="owner/name" autoFocus />
-          <div role="radiogroup" aria-label="Repository" className="card max-h-[40dvh] overflow-y-auto scroll-thin divide-y divide-separator">
-            {repos.isPending ? (
-              <div className="space-y-2 p-3">
-                {[0, 1, 2].map((i) => (
-                  <Skeleton key={i} className="h-10" />
-                ))}
-              </div>
-            ) : repos.isError ? (
-              <p className="t-footnote p-4 text-danger">{repos.error.message}</p>
-            ) : !list.length ? (
-              <p className="t-footnote p-4 text-text-2">No repositories match.</p>
-            ) : (
-              list.map((r) => {
-                const connected = !!r.connected_repository_id;
-                const isSelected = selected === r.full_name;
-                return (
-                  <button
-                    key={r.github_repo_id}
-                    type="button"
-                    role="radio"
-                    aria-checked={isSelected}
-                    disabled={connected}
-                    onClick={() => {
-                      setSelected(r.full_name);
-                      setBranch("");
-                    }}
-                    className={cn("pressable-row flex w-full items-center gap-3 px-4 py-3 text-left disabled:opacity-50", isSelected ? "bg-accent-soft" : "hover:bg-surface-2")}
-                  >
-                    <Github className="size-5 shrink-0 text-text-2" />
-                    <span className="min-w-0 flex-1">
-                      <span className="flex items-center gap-2">
-                        <span className="truncate text-[14px] font-medium text-text">{r.full_name}</span>
-                        {r.is_private ? <Lock className="size-3.5 text-text-3" aria-label="Private" /> : null}
-                        <MockBadge show={r.is_mock} />
-                      </span>
-                      <span className="t-caption text-text-2">
-                        Default branch {r.default_branch}
-                        {connected ? " · already connected" : ""}
-                      </span>
-                    </span>
-                    <span className={cn("size-[18px] shrink-0 rounded-full border-2", isSelected ? "border-accent bg-accent" : "border-separator-strong")} aria-hidden>
-                      {isSelected ? <span className="block size-full scale-50 rounded-full bg-white" /> : null}
-                    </span>
-                  </button>
-                );
-              })
-            )}
-          </div>
+          <SearchField value={filter} onChange={setFilter} placeholder="Search repositories, owner/name" aria-label="Search repositories" autoFocus />
+          {repos.isPending ? (
+            <div className="card space-y-2 p-3">
+              {[0, 1, 2].map((i) => (
+                <Skeleton key={i} className="h-10" />
+              ))}
+            </div>
+          ) : repos.isError ? (
+            <p className="t-footnote rounded-[10px] bg-danger-soft px-3.5 py-2.5 text-danger">{repos.error.message}</p>
+          ) : (
+            <OptionList
+              ariaLabel="Repository"
+              className="max-h-[40dvh] overflow-y-auto scroll-thin"
+              value={selected || null}
+              onChange={(v) => {
+                setSelected(v);
+                setBranch("");
+              }}
+              emptyLabel="No repositories match."
+              options={list.map((r) => ({
+                value: r.full_name,
+                disabled: !!r.connected_repository_id,
+                leading: <Github className="size-5 text-text-2" />,
+                title: (
+                  <>
+                    {r.full_name}
+                    {r.is_private ? <Lock className="size-3.5 text-text-3" aria-label="Private" /> : null}
+                    <MockBadge show={r.is_mock} />
+                  </>
+                ),
+                description: `Default branch ${r.default_branch}${r.connected_repository_id ? " · already connected" : ""}`,
+              }))}
+            />
+          )}
           {selected ? <Input label="Branch" value={branch} onChange={(e) => setBranch(e.target.value)} placeholder={repos.data?.find((r) => r.full_name === selected)?.default_branch ?? "default branch"} hint="Leave empty to watch the default branch." error={fields.branch} /> : null}
         </form>
       )}

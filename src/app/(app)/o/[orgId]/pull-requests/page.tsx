@@ -7,7 +7,7 @@ import { useOrgContext } from "@/components/shell/org-provider";
 import { Badge, MockBadge, StatusBadge } from "@/components/ui/badge";
 import { ListGroup } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
-import { Select } from "@/components/ui/field";
+import { Select } from "@/components/ui/select";
 import { PageHeader } from "@/components/ui/page";
 import { Segmented } from "@/components/ui/segmented";
 import { FilterBar, ListShell, Toolbar } from "@/components/shared/list-shell";
@@ -45,14 +45,14 @@ export default function PullRequestsPage() {
               { value: "failed", label: "Failed" },
             ]}
           />
-          <Select value={params.repository_id} onChange={(e) => update({ repository_id: e.target.value })} wrapperClassName="w-56 shrink-0" className="h-9 text-[13px]" aria-label="Repository">
-            <option value="">All repositories</option>
-            {repos.data?.items.map((r) => (
-              <option key={r.id} value={r.id}>
-                {r.full_name}
-              </option>
-            ))}
-          </Select>
+          <Select
+            size="sm"
+            aria-label="Repository"
+            wrapperClassName="w-60 shrink-0"
+            value={params.repository_id}
+            onChange={(repository_id) => update({ repository_id })}
+            options={[{ value: "", label: "All repositories" }, ...(repos.data?.items.map((r) => ({ value: r.id, label: r.full_name })) ?? [])]}
+          />
         </FilterBar>
       </Toolbar>
       <ListShell query={query} onPage={setPage} empty={<EmptyState icon={GitPullRequest} title="No pull requests yet" description="Deliver a verified repair to open one against the watched branch." />}>

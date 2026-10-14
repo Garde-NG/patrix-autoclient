@@ -7,7 +7,7 @@ import { useOrgContext } from "@/components/shell/org-provider";
 import { Badge, SeverityBadge } from "@/components/ui/badge";
 import { ListGroup } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
-import { Select } from "@/components/ui/field";
+import { Select } from "@/components/ui/select";
 import { PageHeader } from "@/components/ui/page";
 import { Segmented } from "@/components/ui/segmented";
 import { FilterBar, ListShell, Toolbar } from "@/components/shared/list-shell";
@@ -55,14 +55,14 @@ export default function ChangesPage() {
               { value: "informational", label: "Info" },
             ]}
           />
-          <Select value={params.source_id} onChange={(e) => update({ source_id: e.target.value })} wrapperClassName="w-48 shrink-0" className="h-9 text-[13px]" aria-label="Source">
-            <option value="">All sources</option>
-            {sources.data?.items.map((s) => (
-              <option key={s.id} value={s.id}>
-                {s.name}
-              </option>
-            ))}
-          </Select>
+          <Select
+            size="sm"
+            aria-label="Source"
+            wrapperClassName="w-52 shrink-0"
+            value={params.source_id}
+            onChange={(source_id) => update({ source_id })}
+            options={[{ value: "", label: "All sources" }, ...(sources.data?.items.map((s) => ({ value: s.id, label: s.name })) ?? [])]}
+          />
           {params.diff_id ? (
             <button type="button" onClick={() => update({ diff_id: "" })} className="t-footnote shrink-0 rounded-full bg-accent-soft px-3 py-1.5 text-accent">
               One diff run × clear

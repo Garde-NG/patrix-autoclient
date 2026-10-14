@@ -2,7 +2,8 @@
 
 import { useState, type FormEvent } from "react";
 import { Button } from "@/components/ui/button";
-import { Input, Select } from "@/components/ui/field";
+import { Checkbox, FormSection, Input } from "@/components/ui/field";
+import { Select } from "@/components/ui/select";
 import { Sheet } from "@/components/ui/sheet";
 import { toast } from "@/components/ui/toast";
 import { ApiError } from "@/lib/api/client";
@@ -116,33 +117,28 @@ export function SourceSheet({ orgId, open, onClose, source, onSaved }: { orgId: 
           />
         ) : null}
         <Input label="OpenAPI URL" type="url" inputMode="url" value={url} onChange={(e) => setUrl(e.target.value)} error={fields.url} placeholder="https://api.example.com/openapi.json" hint="Fetched now, then on the schedule below. Private and loopback addresses are refused." />
-        <Select label="Poll interval" value={interval} onChange={(e) => setInterval(Number(e.target.value))} error={fields.poll_interval_seconds}>
-          {INTERVALS.map((i) => (
-            <option key={i.value} value={i.value}>
-              {i.label}
-            </option>
-          ))}
-        </Select>
+        <Select label="Poll interval" value={String(interval)} onChange={(v) => setInterval(Number(v))} error={fields.poll_interval_seconds} options={INTERVALS.map((i) => ({ value: String(i.value), label: i.label }))} />
 
-        <fieldset className="rounded-[14px] border border-separator p-4">
-          <legend className="t-footnote px-1 font-medium text-text-2">Authentication {source?.has_credential ? "(a credential is stored)" : "(optional)"}</legend>
+        <FormSection title={`Authentication ${source?.has_credential ? "(a credential is stored)" : "(optional)"}`}>
           <div className="flex flex-col gap-3">
-            <Select label="Type" value={authType} onChange={(e) => setAuthType(e.target.value as typeof authType)}>
-              <option value="">{source?.has_credential ? "Keep existing credential" : "None"}</option>
-              <option value="bearer">Bearer token</option>
-              <option value="basic">Basic (user:password)</option>
-              <option value="header">Custom header</option>
-            </Select>
+            <Select
+              label="Type"
+              value={authType}
+              onChange={(v) => setAuthType(v as typeof authType)}
+              options={[
+                { value: "", label: source?.has_credential ? "Keep existing credential" : "None" },
+                { value: "bearer", label: "Bearer token" },
+                { value: "basic", label: "Basic", description: "user:password" },
+                { value: "header", label: "Custom header" },
+              ]}
+            />
             {authType === "header" ? <Input label="Header name" value={headerName} onChange={(e) => setHeaderName(e.target.value)} placeholder="X-API-Key" required /> : null}
             {authType ? <Input label="Secret" type="password" autoComplete="off" value={secret} onChange={(e) => setSecret(e.target.value)} required hint="Encrypted at rest. Never shown again." /> : null}
             {editing && source?.has_credential && !authType ? (
-              <label className="flex items-center gap-2.5 text-[14px] text-text">
-                <input type="checkbox" checked={clearCredential} onChange={(e) => setClearCredential(e.target.checked)} className="size-4 accent-[var(--accent)]" />
-                Remove the stored credential
-              </label>
+              <Checkbox checked={clearCredential} onChange={setClearCredential} label="Remove the stored credential" />
             ) : null}
           </div>
-        </fieldset>
+        </FormSection>
       </form>
     </Sheet>
   );

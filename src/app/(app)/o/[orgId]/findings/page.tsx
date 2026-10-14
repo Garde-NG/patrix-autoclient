@@ -7,7 +7,7 @@ import { useOrgContext } from "@/components/shell/org-provider";
 import { Badge, SeverityBadge, StatusBadge } from "@/components/ui/badge";
 import { ListGroup } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
-import { Select } from "@/components/ui/field";
+import { Select } from "@/components/ui/select";
 import { PageHeader } from "@/components/ui/page";
 import { Segmented } from "@/components/ui/segmented";
 import { FilterBar, ListShell, Toolbar } from "@/components/shared/list-shell";
@@ -55,22 +55,36 @@ export default function FindingsPage() {
               { value: "informational", label: "Info" },
             ]}
           />
-          <Select value={params.status} onChange={(e) => update({ status: e.target.value as StatusFilter })} wrapperClassName="w-44 shrink-0" className="h-9 text-[13px]" aria-label="Status">
-            <option value="">Any open status</option>
-            <option value="potential_risk">Potential risk</option>
-            <option value="likely_impact">Likely impact</option>
-            <option value="confirmed_incompatibility">Confirmed incompatibility</option>
-            <option value="repair_available">Repair available</option>
-            <option value="informational">Informational</option>
-            <option value="resolved">Resolved</option>
-            <option value="dismissed">Dismissed</option>
-          </Select>
-          <Select value={params.kind} onChange={(e) => update({ kind: e.target.value })} wrapperClassName="w-40 shrink-0" className="h-9 text-[13px]" aria-label="Kind">
-            <option value="">Any kind</option>
-            <option value="api_change">API change</option>
-            <option value="baseline_captured">Baseline captured</option>
-            <option value="source_unreachable">Source unreachable</option>
-          </Select>
+          <Select
+            size="sm"
+            aria-label="Status"
+            wrapperClassName="w-48 shrink-0"
+            value={params.status}
+            onChange={(status) => update({ status })}
+            options={[
+              { value: "", label: "Any open status" },
+              { value: "potential_risk", label: "Potential risk" },
+              { value: "likely_impact", label: "Likely impact" },
+              { value: "confirmed_incompatibility", label: "Confirmed incompatibility" },
+              { value: "repair_available", label: "Repair available" },
+              { value: "informational", label: "Informational" },
+              { value: "resolved", label: "Resolved" },
+              { value: "dismissed", label: "Dismissed" },
+            ]}
+          />
+          <Select
+            size="sm"
+            aria-label="Kind"
+            wrapperClassName="w-44 shrink-0"
+            value={params.kind}
+            onChange={(kind) => update({ kind })}
+            options={[
+              { value: "", label: "Any kind" },
+              { value: "api_change", label: "API change" },
+              { value: "baseline_captured", label: "Baseline captured" },
+              { value: "source_unreachable", label: "Source unreachable" },
+            ]}
+          />
         </FilterBar>
       </Toolbar>
 

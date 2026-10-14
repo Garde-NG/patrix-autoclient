@@ -6,7 +6,8 @@ import { IntegrationRow, IntegrationSheet } from "@/components/integrations/inte
 import { useOrgContext } from "@/components/shell/org-provider";
 import { ListGroup } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
-import { Input, Select } from "@/components/ui/field";
+import { Checkbox, SearchField } from "@/components/ui/field";
+import { Select } from "@/components/ui/select";
 import { PageHeader } from "@/components/ui/page";
 import { FilterBar, ListShell, Toolbar } from "@/components/shared/list-shell";
 import { useIntegrations } from "@/lib/api/hooks/integrations";
@@ -31,19 +32,16 @@ export default function IntegrationsPage() {
       <PageHeader title="Integrations" description="Every third-party SDK and API detected across your connected repositories, with evidence and confidence." />
       <Toolbar>
         <FilterBar className="mb-0 flex-nowrap">
-          <Select value={params.repository_id} onChange={(e) => update({ repository_id: e.target.value })} wrapperClassName="w-56 shrink-0" className="h-9 text-[13px]" aria-label="Repository">
-            <option value="">All repositories</option>
-            {repos.data?.items.map((r) => (
-              <option key={r.id} value={r.id}>
-                {r.full_name}
-              </option>
-            ))}
-          </Select>
-          <Input value={params.provider_key} onChange={(e) => update({ provider_key: e.target.value.toLowerCase() })} placeholder="Provider, e.g. stripe" wrapperClassName="w-44 shrink-0" className="h-9 text-[13px]" aria-label="Provider" />
-          <label className="flex shrink-0 items-center gap-2 text-[13px] text-text-2">
-            <input type="checkbox" checked={params.include_stale} onChange={(e) => update({ include_stale: e.target.checked })} className="size-4 accent-[var(--accent)]" />
-            Include stale
-          </label>
+          <Select
+            size="sm"
+            aria-label="Repository"
+            wrapperClassName="w-60 shrink-0"
+            value={params.repository_id}
+            onChange={(repository_id) => update({ repository_id })}
+            options={[{ value: "", label: "All repositories" }, ...(repos.data?.items.map((r) => ({ value: r.id, label: r.full_name })) ?? [])]}
+          />
+          <SearchField size="sm" aria-label="Provider" wrapperClassName="w-48 shrink-0" value={params.provider_key} onChange={(v) => update({ provider_key: v.toLowerCase() })} placeholder="Provider, e.g. stripe" />
+          <Checkbox checked={params.include_stale} onChange={(include_stale) => update({ include_stale })} label={<span className="text-[13px] text-text-2">Include stale</span>} className="shrink-0 py-0" />
         </FilterBar>
       </Toolbar>
       <ListShell query={query} onPage={setPage} empty={<EmptyState icon={ListChecks} title="No integrations detected" description="Connect a repository and let its first scan finish. Manifests, lockfiles and source files are analysed." />}>

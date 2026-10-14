@@ -9,7 +9,8 @@ import { Button } from "@/components/ui/button";
 import { Card, ListGroup, Row } from "@/components/ui/card";
 import { ConfirmDialog } from "@/components/ui/dialog";
 import { EmptyState } from "@/components/ui/empty-state";
-import { Select } from "@/components/ui/field";
+import { OptionList } from "@/components/ui/option-list";
+import { Select } from "@/components/ui/select";
 import { PageHeader, Section } from "@/components/ui/page";
 import { Segmented } from "@/components/ui/segmented";
 import { Sheet } from "@/components/ui/sheet";
@@ -128,13 +129,7 @@ function Billing() {
           <div className="flex items-center gap-2">
             <Segmented ariaLabel="Billing interval" value={interval} onChange={setInterval} options={[{ value: "month", label: "Monthly" }, { value: "year", label: "Yearly" }]} />
             {plans.data?.currencies.length ? (
-              <Select value={currency ?? ""} onChange={(e) => setCurrency(e.target.value)} wrapperClassName="w-24" className="h-9 text-[13px]" aria-label="Currency">
-                {plans.data.currencies.map((c) => (
-                  <option key={c} value={c}>
-                    {c}
-                  </option>
-                ))}
-              </Select>
+              <Select size="sm" aria-label="Currency" wrapperClassName="w-28" value={currency ?? ""} onChange={setCurrency} options={plans.data.currencies.map((c) => ({ value: c, label: c }))} />
             ) : null}
           </div>
         }
@@ -270,25 +265,23 @@ function CheckoutSheet({ orgId, selection, providers, onClose }: { orgId: string
         </Button>
       }
     >
-      <div className="space-y-3 pb-2" role="radiogroup" aria-label="Payment provider">
-        {options.map((p) => {
-          const active = p.key === chosen;
-          return (
-            <button key={p.key} type="button" role="radio" aria-checked={active} onClick={() => setProvider(p.key)} className={cn("pressable flex w-full items-start gap-3 rounded-[14px] border p-4 text-left", active ? "border-accent bg-accent-soft" : "border-separator bg-surface hover:bg-surface-2")}>
-              <span className={cn("mt-0.5 size-[18px] shrink-0 rounded-full border-2", active ? "border-accent bg-accent" : "border-separator-strong")} aria-hidden>
-                {active ? <span className="block size-full scale-50 rounded-full bg-white" /> : null}
-              </span>
-              <span className="min-w-0">
-                <span className="flex items-center gap-2 text-[15px] font-medium text-text">
-                  {p.display_name} <MockBadge show={p.is_mock} />
-                </span>
-                <span className="t-footnote block text-text-2">{p.note}</span>
-                <span className="t-caption block text-text-3">{p.currencies.join(", ")}</span>
-              </span>
-            </button>
-          );
-        })}
-        {!options.length ? <EmptyState compact title="No provider collects this currency" description="Pick another currency above." /> : null}
+      <div className="space-y-3 pb-2">
+        <OptionList
+          ariaLabel="Payment provider"
+          value={chosen || null}
+          onChange={setProvider}
+          emptyLabel="No provider collects this currency. Pick another currency above."
+          options={options.map((p) => ({
+            value: p.key,
+            title: (
+              <>
+                {p.display_name} <MockBadge show={p.is_mock} />
+              </>
+            ),
+            description: p.note,
+            meta: p.currencies.join(", "),
+          }))}
+        />
         {create.error ? <p role="alert" className="t-footnote rounded-[10px] bg-danger-soft px-3.5 py-2.5 text-danger">{create.error.message}</p> : null}
       </div>
     </Sheet>
