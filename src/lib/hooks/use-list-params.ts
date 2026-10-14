@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 type Primitive = string | number | boolean | undefined;
@@ -43,4 +43,46 @@ export function useListParams<T extends Record<string, Primitive>>(defaults: T) 
   );
 
   return { params, update, setPage: (page: number) => update({ page } as Partial<T & { page: number }>) };
+}
+
+/**
+ * Text filters type into local state and sync to the URL after a short pause, so every
+ * keystroke is captured and the page does not re-render per character. The URL still wins when
+ * it changes from outside (back/forward, a pasted link).
+ */
+export function useDebouncedParam(value: string, commit: (next: string) => void, delay = 350) {
+  const [local, setLocal] = useState(value);
+  const [seen, setSeen] = useState(value);
+  // What we last pushed to the URL: state for render-time comparison, a ref for the timer callback.
+  const [committed, setCommitted] = useState(value);
+  const lastCommitted = useRef(value);
+  const timer = useRef<number | undefined>(undefined);
+
+  // External URL change (not one we just committed): adopt it. Adjusting state during render
+  // is the React-sanctioned way to derive from a changed prop without an effect.
+  if (value !== seen) {
+    setSeen(value);
+    if (value !== committed) {
+      setCommitted(value);
+      setLocal(value);
+    }
+  }
+
+  useEffect(() => () => window.clearTimeout(timer.current), []);
+
+  const onChange = useCallback(
+    (next: string) => {
+      setLocal(next);
+      window.clearTimeout(timer.current);
+      timer.current = window.setTimeout(() => {
+        if (next === lastCommitted.current) return;
+        lastCommitted.current = next;
+        setCommitted(next);
+        commit(next);
+      }, delay);
+    },
+    [commit, delay],
+  );
+
+  return [local, onChange] as const;
 }

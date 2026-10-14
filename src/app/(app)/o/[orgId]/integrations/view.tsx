@@ -12,7 +12,7 @@ import { PageHeader } from "@/components/ui/page";
 import { FilterBar, ListShell, Toolbar } from "@/components/shared/list-shell";
 import { useIntegrations } from "@/lib/api/hooks/integrations";
 import { useRepositories } from "@/lib/api/hooks/repositories";
-import { useListParams } from "@/lib/hooks/use-list-params";
+import { useDebouncedParam, useListParams } from "@/lib/hooks/use-list-params";
 
 const DEFAULTS = { repository_id: "", provider_key: "", include_stale: false, open: "" };
 
@@ -25,6 +25,7 @@ export default function IntegrationsPage() {
     [params],
   );
   const query = useIntegrations(orgId, filters);
+  const [providerText, setProviderText] = useDebouncedParam(params.provider_key, (v) => update({ provider_key: v.toLowerCase().trim() }));
   const repoName = (id: string) => repos.data?.items.find((r) => r.id === id)?.full_name;
 
   return (
@@ -40,7 +41,7 @@ export default function IntegrationsPage() {
             onChange={(repository_id) => update({ repository_id })}
             options={[{ value: "", label: "All repositories" }, ...(repos.data?.items.map((r) => ({ value: r.id, label: r.full_name })) ?? [])]}
           />
-          <SearchField size="sm" aria-label="Provider" wrapperClassName="w-48 shrink-0" value={params.provider_key} onChange={(v) => update({ provider_key: v.toLowerCase() })} placeholder="Provider, e.g. stripe" />
+          <SearchField size="sm" aria-label="Provider" wrapperClassName="w-48 shrink-0" value={providerText} onChange={setProviderText} placeholder="Provider, e.g. stripe" />
           <Checkbox checked={params.include_stale} onChange={(include_stale) => update({ include_stale })} label={<span className="text-[13px] text-text-2">Include stale</span>} className="shrink-0 py-0" />
         </FilterBar>
       </Toolbar>

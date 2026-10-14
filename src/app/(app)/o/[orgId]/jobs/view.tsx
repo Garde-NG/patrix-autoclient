@@ -14,7 +14,7 @@ import { Sheet } from "@/components/ui/sheet";
 import { toast } from "@/components/ui/toast";
 import { FilterBar, ListShell, Toolbar } from "@/components/shared/list-shell";
 import { useJob, useJobAction, useJobs } from "@/lib/api/hooks/jobs";
-import { useListParams } from "@/lib/hooks/use-list-params";
+import { useDebouncedParam, useListParams } from "@/lib/hooks/use-list-params";
 import type { JobStatus } from "@/lib/api/types";
 import { formatDateTime, formatDuration, timeAgo } from "@/lib/utils";
 
@@ -26,6 +26,7 @@ export default function JobsPage() {
   const { params, update, setPage } = useListParams(DEFAULTS);
   const filters = useMemo(() => ({ page: params.page, page_size: 25, status: params.status || undefined, kind: params.kind || undefined }), [params]);
   const query = useJobs(orgId, filters);
+  const [kindText, setKindText] = useDebouncedParam(params.kind, (v) => update({ kind: v.trim() }));
   const [open, setOpen] = useState<string | null>(null);
   const job = useJob(orgId, open);
   const act = useJobAction(orgId);
@@ -47,7 +48,7 @@ export default function JobsPage() {
               { value: "dead", label: "Dead" },
             ]}
           />
-          <SearchField size="sm" aria-label="Kind" wrapperClassName="w-52 shrink-0" className="font-mono" value={params.kind} onChange={(kind) => update({ kind })} placeholder="Kind, e.g. repo.scan" />
+          <SearchField size="sm" aria-label="Kind" wrapperClassName="w-52 shrink-0" className="font-mono" value={kindText} onChange={setKindText} placeholder="Kind, e.g. repo.scan" />
         </FilterBar>
       </Toolbar>
       <ListShell query={query} onPage={setPage} empty={<EmptyState icon={Activity} title="No jobs" description="Jobs appear when sources are fetched, repositories scanned or repairs requested." />}>
