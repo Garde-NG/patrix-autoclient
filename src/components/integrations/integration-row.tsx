@@ -13,25 +13,38 @@ import { useIntegration } from "@/lib/api/hooks/integrations";
 import type { Integration } from "@/lib/api/types";
 import { formatDateTime, humanize } from "@/lib/utils";
 
-export function IntegrationRow({ integration: i, onClick, showRepo }: { integration: Integration; onClick: () => void; showRepo?: boolean }) {
+function confidenceTone(confidence: Integration["confidence"]) {
+  return confidence === "high" ? "success" : confidence === "medium" ? "warning" : "neutral";
+}
+
+/**
+ * One detected integration. Three lines of text that each truncate on their own (name, package,
+ * detection facts), the repository as a fourth line when the list spans repositories, and the
+ * badges stacked on the trailing edge so they never squeeze the text on a phone.
+ */
+export function IntegrationRow({ integration: i, onClick, repoName }: { integration: Integration; onClick: () => void; repoName?: string | null }) {
+  const version = i.resolved_version ?? i.version_spec;
   return (
-    <button type="button" onClick={onClick} className="pressable-row flex w-full items-center gap-3 px-4 py-3 text-left hover:bg-surface-2">
-      <span className="flex size-10 shrink-0 items-center justify-center rounded-[12px] bg-purple-soft text-purple">
+    <button type="button" onClick={onClick} className="pressable-row flex w-full items-start gap-3 px-4 py-3 text-left hover:bg-surface-2 sm:items-center">
+      <span className="mt-0.5 flex size-10 shrink-0 items-center justify-center rounded-[12px] bg-purple-soft text-purple sm:mt-0">
         <Package className="size-5" strokeWidth={1.9} />
       </span>
       <span className="min-w-0 flex-1">
-        <span className="flex items-center gap-2">
+        <span className="flex min-w-0 items-baseline gap-2">
           <span className="truncate text-[15px] font-medium text-text">{i.provider_key}</span>
-          {i.package_name ? <span className="t-mono hidden truncate text-text-2 sm:inline">{i.package_name}</span> : null}
+          {i.package_name ? <span className="t-mono hidden min-w-0 truncate text-text-2 md:inline">{i.package_name}</span> : null}
         </span>
+        {i.package_name ? <span className="t-mono block truncate text-text-2 md:hidden">{i.package_name}</span> : null}
         <span className="t-footnote block truncate text-text-2">
           {i.ecosystem}
-          {i.resolved_version ? ` · ${i.resolved_version}` : i.version_spec ? ` · ${i.version_spec}` : ""} · {humanize(i.detection_method)}
-          {showRepo ? "" : ""}
+          {version ? ` · ${version}` : ""} · {humanize(i.detection_method)}
         </span>
+        {repoName ? <span className="t-caption block truncate text-text-3">{repoName}</span> : null}
       </span>
-      <Badge tone={i.confidence === "high" ? "success" : i.confidence === "medium" ? "warning" : "neutral"}>{humanize(i.confidence)}</Badge>
-      {i.status !== "active" ? <StatusBadge status={i.status} /> : null}
+      <span className="flex shrink-0 flex-col items-end gap-1.5 sm:flex-row sm:items-center">
+        <Badge tone={confidenceTone(i.confidence)}>{humanize(i.confidence)}</Badge>
+        {i.status !== "active" ? <StatusBadge status={i.status} /> : null}
+      </span>
     </button>
   );
 }
@@ -49,7 +62,7 @@ export function IntegrationSheet({ orgId, integrationId, onClose }: { orgId: str
         <div className="space-y-5 pb-2">
           <ListGroup>
             <dl className="divide-y divide-separator">
-              <KeyValue label="Confidence" value={<Badge tone={i.confidence === "high" ? "success" : i.confidence === "medium" ? "warning" : "neutral"}>{humanize(i.confidence)}</Badge>} />
+              <KeyValue label="Confidence" value={<Badge tone={confidenceTone(i.confidence)}>{humanize(i.confidence)}</Badge>} />
               <KeyValue label="Detected by" value={humanize(i.detection_method)} />
               <KeyValue label="Version" value={i.resolved_version ?? i.version_spec ?? "—"} mono />
               <KeyValue label="Status" value={<StatusBadge status={i.status} />} />
