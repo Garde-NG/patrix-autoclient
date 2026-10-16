@@ -14,6 +14,13 @@ import type { Integration } from "@/lib/api/types";
 import { formatDateTime, humanize } from "@/lib/utils";
 
 const ECOSYSTEM_LABEL: Record<string, string> = { npm: "npm", maven: "Maven", gradle: "Gradle", pypi: "PyPI", http: "HTTP" };
+const DETECTION_LABEL: Record<string, string> = {
+  manifest: "Declared dependency",
+  import: "Imported in code",
+  url: "Called by URL",
+  config: "Configured base URL",
+  ai: "AI classified",
+};
 
 function confidenceTone(confidence: Integration["confidence"]) {
   return confidence === "high" ? "success" : confidence === "medium" ? "warning" : "neutral";
@@ -39,7 +46,7 @@ export function IntegrationRow({ integration: i, onClick, repoName }: { integrat
         {i.package_name ? <span className="t-mono block truncate text-text-2 md:hidden">{i.package_name}</span> : null}
         <span className="t-footnote block truncate text-text-2">
           {ECOSYSTEM_LABEL[i.ecosystem] ?? i.ecosystem}
-          {version ? ` · ${version}` : ""} · {humanize(i.detection_method)}
+          {version ? ` · ${version}` : ""} · {DETECTION_LABEL[i.detection_method] ?? humanize(i.detection_method)}
         </span>
         {repoName ? <span className="t-caption block truncate text-text-3">{repoName}</span> : null}
       </span>
@@ -65,7 +72,7 @@ export function IntegrationSheet({ orgId, integrationId, onClose }: { orgId: str
           <ListGroup>
             <dl className="divide-y divide-separator">
               <KeyValue label="Confidence" value={<Badge tone={confidenceTone(i.confidence)}>{humanize(i.confidence)}</Badge>} />
-              <KeyValue label="Detected by" value={humanize(i.detection_method)} />
+              <KeyValue label="Detected by" value={DETECTION_LABEL[i.detection_method] ?? humanize(i.detection_method)} />
               <KeyValue label="Version" value={i.resolved_version ?? i.version_spec ?? "—"} mono />
               <KeyValue label="Status" value={<StatusBadge status={i.status} />} />
               <KeyValue
