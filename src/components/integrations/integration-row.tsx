@@ -13,6 +13,8 @@ import { useIntegration } from "@/lib/api/hooks/integrations";
 import type { Integration } from "@/lib/api/types";
 import { formatDateTime, humanize } from "@/lib/utils";
 
+const ECOSYSTEM_LABEL: Record<string, string> = { npm: "npm", maven: "Maven", gradle: "Gradle", pypi: "PyPI", http: "HTTP" };
+
 function confidenceTone(confidence: Integration["confidence"]) {
   return confidence === "high" ? "success" : confidence === "medium" ? "warning" : "neutral";
 }
@@ -36,7 +38,7 @@ export function IntegrationRow({ integration: i, onClick, repoName }: { integrat
         </span>
         {i.package_name ? <span className="t-mono block truncate text-text-2 md:hidden">{i.package_name}</span> : null}
         <span className="t-footnote block truncate text-text-2">
-          {i.ecosystem}
+          {ECOSYSTEM_LABEL[i.ecosystem] ?? i.ecosystem}
           {version ? ` · ${version}` : ""} · {humanize(i.detection_method)}
         </span>
         {repoName ? <span className="t-caption block truncate text-text-3">{repoName}</span> : null}
@@ -53,7 +55,7 @@ export function IntegrationSheet({ orgId, integrationId, onClose }: { orgId: str
   const q = useIntegration(orgId, integrationId);
   const i = q.data;
   return (
-    <Sheet open={!!integrationId} onClose={onClose} size="lg" title={i ? i.provider_key : "Integration"} description={i ? `${i.package_name ?? "No package"} · ${i.ecosystem}` : undefined}>
+    <Sheet open={!!integrationId} onClose={onClose} size="lg" title={i ? i.provider_key : "Integration"} description={i ? `${i.package_name ?? "No package"} · ${ECOSYSTEM_LABEL[i.ecosystem] ?? i.ecosystem}` : undefined}>
       {q.isPending ? (
         <Skeleton className="h-64" />
       ) : q.isError || !i ? (
